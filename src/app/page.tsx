@@ -1,98 +1,108 @@
+// src/app/page.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import Image from "next/image";
-import SearchBar from "@/components/SearchBar";
+import { useRouter } from "next/navigation";
+import { fetchItems, addItem, deleteItem, toggleItem } from "@/lib/fetcher";
+import { Item } from "@/types/item";
 import CheckList from "@/components/CheckList";
-import type { Item } from "@/types/item";
-import { fetchItems, addItem, updateItem, deleteItem } from "@/lib/fetcher";
+import SearchBar from "@/components/SearchBar"; // ✅ SearchBar만 사용
 
-export default function Page() {
-  const [items, setItems] = useState<Item[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function HomePage() {
+  const router = useRouter();
+  const [todos, setTodos] = useState<Item[]>([]);
+  const [done, setDone] = useState<Item[]>([]);
 
-  // 초기 로딩
   useEffect(() => {
-    (async () => {
-      try {
-        const data = await fetchItems();
-        setItems(data);
-      } finally {
-        setLoading(false);
-      }
-    })();
+    const loadData = async () => {
+      const items = await fetchItems();
+      setTodos(items.filter((t) => !t.isCompleted));
+      setDone(items.filter((t) => t.isCompleted));
+    };
+    loadData();
   }, []);
 
-  // 추가
-  const addTodo = async (name: string) => {
-    const created = await addItem(name);
-    setItems((prev) => [...prev, created]);
-  };
+async function handleAdd(name: string) {
+  if (!name.trim()) return;
 
-  // 토글
-  const toggleTodo = async (id: number) => {
-    const target = items.find((i) => i.id === id);
-    if (!target) return;
+  // 이미 동일한 name이 있는지 검사
+  if (todos.some((t) => t.name === name) || done.some((t) => t.name === name)) {
+    alert("이미 같은 할 일이 있습니다.");
+    return;
+  }
 
-    const next = !target.isCompleted;
+  const created = await addItem(name);
+  setTodos((prev) => [...prev, created]);
+}
 
-    // 낙관적 업데이트
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, isCompleted: next } : i)));
-
-    try {
-      await updateItem(id, { 
-        name: target.name,
-        memo: target.memo ?? "",
-        imageUrl: target.imageUrl ?? "",
-        isCompleted: !target.isCompleted, });
-    } catch {
-      // 실패시 롤백
-      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, isCompleted: !next } : i)));
-    }
-  };
-
-  // 삭제
-  const removeTodo = async (id: number) => {
-    const snapshot = items;
-    setItems((prev) => prev.filter((i) => i.id !== id));
-    try {
-      await deleteItem(id);
-    } catch {
-      setItems(snapshot); // 실패 시 복구
-    }
-  };
-
-  const todos = items.filter((i) => !i.isCompleted);
-  const dones = items.filter((i) => i.isCompleted);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      {/* GNB */}
-      <header className="bg-white text-gray-900 border-b border-gray-200">
-        <div className="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {/* ✅ 로고 경로/대소문자 통일: public/images/logo.png */}
-            <Image src="/images/size=small@3x.png" alt="Logo" width={40} height={40} priority />
-            <span className="text-xl font-extrabold text-purple-700">do it ;</span>
-          </div>
-        </div>
+    <main className="max-w-5xl mx-auto p-6 space-y-8">
+      {/* 로고 헤더 */}
+      <header className="flex items-center gap-2">
+        <Link href="/" className="block cursor-pointer">
+          <Image
+            src="/images/logo_3x.png"
+            alt="로고"
+            width={200}
+            height={200}
+            priority
+          />
+        </Link>
       </header>
 
-      {/* MAIN */}
-      <main className="mx-auto max-w-5xl px-4 py-6">
-        <div className="mb-6">
-          <SearchBar onAdd={addTodo} />
-        </div>
+      {/* ✅ SearchBar만 사용 */}
+      <SearchBar onAdd={handleAdd} />
 
-        {loading ? (
-          <div className="py-16 text-center text-gray-500">불러오는 중…</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <CheckList title="TO DO" todos={todos} onToggle={toggleTodo} onDelete={removeTodo} />
-            <CheckList title="DONE" todos={dones} onToggle={toggleTodo} onDelete={removeTodo} />
-          </div>
-        )}
-      </main>
-    </div>
+      {/* 할 일 목록 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <CheckList
+          title="TODO"
+          todos={todos}
+          onToggle={async (id) => {
+            try {
+              const updated = await toggleItem(id, true); // API 호출
+              // ✅ 로컬 상태도 업데이트
+              setTodos((prev) => prev.filter((t) => t.id !== id));
+              setDone((prev) => [...prev, updated]);
+            } catch (err) {
+              console.error("토글 실패:", err);
+            }
+          }}
+          onDelete={async (id) => {
+            try {
+              await deleteItem(id);
+              setTodos((prev) => prev.filter((t) => t.id !== id));
+            } catch (err) {
+              console.error("삭제 실패:", err);
+            }
+          }}
+        />
+
+        <CheckList
+          title="DONE"
+          todos={done}
+          onToggle={async (id) => {
+            try {
+              const updated = await toggleItem(id, false);
+              setDone((prev) => prev.filter((t) => t.id !== id));
+              setTodos((prev) => [...prev, updated]);
+            } catch (err) {
+              console.error("토글 실패:", err);
+            }
+          }}
+          onDelete={async (id) => {
+            try {
+              await deleteItem(id);
+              setDone((prev) => prev.filter((t) => t.id !== id));
+            } catch (err) {
+              console.error("삭제 실패:", err);
+            }
+          }}
+        />
+      </div>
+    </main>
   );
 }

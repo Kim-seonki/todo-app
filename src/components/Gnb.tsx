@@ -3,7 +3,6 @@ import React from "react";
 
 import Image from "next/image";
 import Link from "next/link";
-import logo from "@/../public/images/Size=Small@3x.png"; // 업로드한 로고 이미지 위치에 맞게 조정
 
 const Gnb = () => {
   return (
@@ -11,7 +10,7 @@ const Gnb = () => {
       <Link href="/">
         <div className="flex items-center gap-2 cursor-pointer">
           <img
-            src="/images/Size=Small@3x.png" // ✅ 소문자 이름으로 통일
+            src="/images/logo_3x.png" // ✅ 소문자 이름으로 통일
             alt="Logo"
             className="h-8"
         />

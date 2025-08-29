@@ -86,11 +86,19 @@ export async function toggleItem(id: number, isCompleted: boolean): Promise<Item
 }
 
 // 📌 할 일 삭제
-export async function deleteItem(id: number): Promise<{ message: string }> {
-  return apiFetch<{ message: string }>(`/${id}`, {
-    method: "DELETE"
-  });
+export async function deleteItem(id: number): Promise<boolean> {
+  try {
+    const result = await apiFetch<{}>(`/${id}`, { method: "DELETE" });
+    console.log("🗑 삭제 성공:", result);
+    return true;
+  } catch (err) {
+    console.error("❌ 삭제 에러:", err);
+    throw err;
+  }
 }
+
+
+
 
 // 📌 이미지 업로드
 export async function uploadImage(file: File): Promise<{ url: string }> {

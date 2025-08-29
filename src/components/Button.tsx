@@ -1,48 +1,56 @@
 // src/components/Button.tsx
-import React from "react";
-import clsx from "clsx";
 
-type ButtonProps = {
-  children: React.ReactNode;
-  onClick?: () => void;
-  type?: "button" | "submit" | "reset";
-  variant?: "primary" | "secondary" | "danger";
-  disabled?: boolean;
+"use client";
+
+import Image from "next/image";
+import React from "react";
+
+type VariantType = "add" | "edit" | "delete"; // ✅ 버튼 타입 확장
+type VariantSize = "large";
+type VariantState = "active" | "default";
+
+export type ButtonProps = {
+  children?: React.ReactNode;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  type: VariantType;    // 필수 (버튼 타입)
+  size?: VariantSize;   // 현재는 large만 지원
+  state?: VariantState; // active | default
   className?: string;
 };
 
 const Button: React.FC<ButtonProps> = ({
-  children,
   onClick,
-  type = "button",
-  variant = "primary",
-  disabled = false,
+  type,
+  size = "large",
+  state = "default",
   className,
 }) => {
-  const baseStyles =
-    "px-4 py-2 rounded-lg font-semibold transition-colors duration-200";
+  // Figma 네이밍 규칙에 맞춰 파일 경로 생성
+  const imageSrc = `/images/Type=${capitalize(type)}, Size=${capitalize(
+    size
+  )}, State=${capitalize(state)}.png`;
 
-  const variants = {
-    primary: "bg-blue-500 text-white hover:bg-blue-600",
-    secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300",
-    danger: "bg-red-500 text-white hover:bg-red-600",
-  };
+  // PNG에 맞는 width/height (공통 적용)
+  const width = 168;
+  const height = 56;
 
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className={clsx(
-        baseStyles,
-        variants[variant],
-        disabled && "opacity-50 cursor-not-allowed",
-        className
-      )}
-    >
-      {children}
+    <button onClick={onClick} disabled={state === "default"}>
+      <Image
+        src={imageSrc}
+        alt={`${type} button`}
+        width={width}
+        height={height}
+        className={className}
+        priority
+      />
     </button>
   );
 };
+
+// 첫 글자 대문자 변환 유틸
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
 export default Button;

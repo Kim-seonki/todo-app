@@ -1,24 +1,30 @@
+// src/components/CheckList.tsx
+
 "use client";
 
 import React from "react";
-import SectionTitle from "./SectionTitle";
 import EmptyState from "./EmptyState";
 import CheckListItem from "./CheckListItem";
 import type { Item } from "@/types/item";
+import Image from "next/image";
 
 type Props = {
-  title: "TO DO" | "TODO" | "DONE";
+  title: "TODO" | "DONE"; // ✅ 띄어쓰기 없는 고정 값
   todos: Item[];
   onToggle: (id: number) => void;
   onDelete: (id: number) => void;
 };
 
 export default function CheckList({ title, todos, onToggle, onDelete }: Props) {
-  const color = title === "DONE" ? "purple" : "green";
+  // ✅ title에 따라 아이콘 이미지 분기
+  const iconSrc = title === "DONE" ? "/images/done.png" : "/images/todo.png";
 
   return (
     <section className="bg-white text-gray-900 rounded-3xl shadow-sm border border-gray-200 p-6">
-      <SectionTitle color={color}>{title}</SectionTitle>
+      {/* ✅ PNG 아이콘으로만 타이틀 표시 */}
+      <div className="mb-4">
+        <Image src={iconSrc} alt={title} width={80} height={24} priority />
+      </div>
 
       <div className="mt-4 space-y-2">
         {todos.length === 0 ? (
@@ -34,7 +40,6 @@ export default function CheckList({ title, todos, onToggle, onDelete }: Props) {
               name={t.name}
               isCompleted={t.isCompleted}
               onToggle={onToggle}
-              onDelete={onDelete}
             />
           ))
         )}
