@@ -35,7 +35,7 @@ const Button: React.FC<ButtonProps> = ({
   const height = 56;
 
   return (
-    <button onClick={onClick} disabled={state === "default"}>
+    <button onClick={onClick}>
       <Image
         src={imageSrc}
         alt={`${type} button`}

@@ -40,7 +40,7 @@ const CheckListItem: React.FC<CheckListItemProps> = ({
               h-[26px] md:h-[28px]
               rounded-full pointer-events-none z-10
               left-[25px] right-[72px]
-              md:left-[44px] md:right-[82px]
+              md:left-[42px] md:right-[82px]
             "
             style={{ backgroundColor: coverColor }}
             data-testid="cover"

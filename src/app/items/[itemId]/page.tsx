@@ -56,15 +56,17 @@ export default function TodoItemPage() {
     );
   }, [form, item]);
 
-  async function handleUpdate() {
-    if (!isChanged) return; // 변경 없으면 업데이트 안함
-    try {
-      await updateItem(itemId, form);
-      router.push("/");
-    } catch (err) {
-      console.error("수정 실패:", err);
+async function handleUpdate() {
+  try {
+    if (isChanged) {
+      await updateItem(itemId, form);  // 변경이 있을 경우 → 서버에 PATCH
     }
+    router.push("/"); // 변경이 없어도 무조건 목록으로 이동
+  } catch (err) {
+    console.error("수정 실패:", err);
   }
+}
+
 
   async function handleDelete() {
     try {
@@ -92,7 +94,7 @@ export default function TodoItemPage() {
       return;
     }
 
-    // ✅ 미리보기용 URL 생성
+    // ✅ 미리보기용 URL 생성a
     const url = URL.createObjectURL(file);
     setForm({ ...form, imageUrl: url });
 
@@ -144,7 +146,7 @@ export default function TodoItemPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 이미지 영역 */}
         <div className="flex items-center justify-center border-2 border-dashed rounded-lg h-72 bg-gray-50 relative">
-          {form.imageUrl ? (
+          {form.imageUrl && form.imageUrl.trim() !== "" ? (
             <Image
               src={form.imageUrl}
               alt="첨부 이미지"
@@ -195,11 +197,12 @@ export default function TodoItemPage() {
             backgroundRepeat: "no-repeat",
           }}
         >
-          <h2 className="text-center text-brown-700 font-bold mb-2">Memo</h2>
+          <h2 className="text-center text-brown-700 font-bold mb-2 dark:text-black">Memo</h2>
           <textarea
             value={form.memo || ""}
             onChange={(e) => setForm({ ...form, memo: e.target.value })}
-            className="w-full h-48 bg-transparent focus:outline-none resize-none"
+            className="w-full h-48 bg-transparent focus:outline-none resize-none text-black dark:text-black" 
+            // 👆 항상 글씨를 검은색으로
           />
         </div>
       </div>

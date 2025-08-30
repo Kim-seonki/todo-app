@@ -88,7 +88,7 @@ export async function toggleItem(id: number, isCompleted: boolean): Promise<Item
 // 📌 할 일 삭제
 export async function deleteItem(id: number): Promise<boolean> {
   try {
-    const result = await apiFetch<{}>(`/${id}`, { method: "DELETE" });
+    const result = await apiFetch<unknown>(`/${id}`, { method: "DELETE" });
     console.log("🗑 삭제 성공:", result);
     return true;
   } catch (err) {
