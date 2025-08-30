@@ -6,11 +6,10 @@ const nextConfig = {
   },
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "sprint-fe-project.s3.ap-northeast-2.amazonaws.com",
-        pathname: "/**", // S3 안의 모든 경로 허용
-      },
+      { protocol: "https", hostname: "todo-appv3.vercel.app/" },
+      { protocol: "https", hostname: "bucket.s3.amazonaws.com" },
+      { protocol: "https", hostname: "s3.ap-northeast-2.amazonaws.com" },
+      // 필요 도메인 추가
     ],
   },
 };

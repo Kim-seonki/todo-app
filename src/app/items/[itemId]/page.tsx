@@ -8,6 +8,7 @@ import Image from "next/image";
 import { fetchItem, updateItem, deleteItem } from "@/lib/fetcher";
 import { Item, UpdateItemDto } from "@/types/item";
 import Button from "@/components/Button";
+import DetailTitle from "@/components/DetailTitle";
 
 export default function TodoItemPage() {
   const router = useRouter();
@@ -45,28 +46,27 @@ export default function TodoItemPage() {
     if (!isNaN(itemId)) loadItem();
   }, [itemId]);
 
-  // ✅ 변경 여부 체크
+  // 변경 여부 체크
   const isChanged = useMemo(() => {
     if (!item) return false;
     return (
       form.name !== item.name ||
-      form.memo !== (item.memo || "") ||
-      form.imageUrl !== (item.imageUrl || "") ||
+      (form.memo || "") !== (item.memo || "") ||
+      (form.imageUrl || "") !== (item.imageUrl || "") ||
       form.isCompleted !== item.isCompleted
     );
   }, [form, item]);
 
-async function handleUpdate() {
-  try {
-    if (isChanged) {
-      await updateItem(itemId, form);  // 변경이 있을 경우 → 서버에 PATCH
+  async function handleUpdate() {
+    try {
+      if (isChanged) {
+        await updateItem(itemId, form); // 변경이 있을 경우 → 서버에 PATCH
+      }
+      router.push("/"); // 변경이 없어도 무조건 목록으로 이동
+    } catch (err) {
+      console.error("수정 실패:", err);
     }
-    router.push("/"); // 변경이 없어도 무조건 목록으로 이동
-  } catch (err) {
-    console.error("수정 실패:", err);
   }
-}
-
 
   async function handleDelete() {
     try {
@@ -77,7 +77,7 @@ async function handleUpdate() {
     }
   }
 
-  // ✅ 파일 업로드 처리
+  // 파일 업로드 처리
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -88,19 +88,23 @@ async function handleUpdate() {
       alert("파일 이름은 영어만 허용되며 확장자는 jpg, jpeg, png만 가능합니다.");
       return;
     }
-
     if (file.size > 5 * 1024 * 1024) {
       alert("파일 크기는 5MB 이하여야 합니다.");
       return;
     }
 
-    // ✅ 미리보기용 URL 생성a
+    // 미리보기용 URL
     const url = URL.createObjectURL(file);
-    setForm({ ...form, imageUrl: url });
+    setForm((prev) => ({ ...prev, imageUrl: url }));
 
-    // 실제 업로드 처리 (예: 서버 API 호출) 추가 가능
     console.log("업로드할 파일:", file);
   }
+
+  const hasImage = (url?: string | null): url is string =>
+    !!url && url.trim() !== "";
+
+  const isRemote = (url?: string | null) =>
+    !!url && /^https?:\/\//i.test(url);
 
   if (loading)
     return (
@@ -128,17 +132,11 @@ async function handleUpdate() {
 
       {/* 제목 + 완료체크 */}
       <div className="flex items-center gap-3 border rounded-full px-6 py-3">
-        <input
-          type="checkbox"
-          checked={form.isCompleted}
-          onChange={(e) => setForm({ ...form, isCompleted: e.target.checked })}
-          className="w-5 h-5 accent-purple-600"
-        />
-        <input
-          type="text"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="flex-1 text-lg font-medium focus:outline-none"
+        <DetailTitle
+          name={form.name}
+          isCompleted={form.isCompleted}
+          onToggle={(checked) => setForm({ ...form, isCompleted: checked })}
+          onNameChange={(value) => setForm({ ...form, name: value })}
         />
       </div>
 
@@ -146,12 +144,14 @@ async function handleUpdate() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 이미지 영역 */}
         <div className="flex items-center justify-center border-2 border-dashed rounded-lg h-72 bg-gray-50 relative">
-          {form.imageUrl && form.imageUrl.trim() !== "" ? (
+          {hasImage(form.imageUrl) ? (
             <Image
               src={form.imageUrl}
               alt="첨부 이미지"
               fill
               className="object-contain rounded-lg"
+              // 외부 URL이면 도메인 등록 전에도 보이도록 우선 비최적화
+              unoptimized={isRemote(form.imageUrl)}
             />
           ) : (
             <div className="flex flex-col items-center text-gray-400">
@@ -197,12 +197,13 @@ async function handleUpdate() {
             backgroundRepeat: "no-repeat",
           }}
         >
-          <h2 className="text-center text-brown-700 font-bold mb-2 dark:text-black">Memo</h2>
+          <h2 className="text-center font-bold mb-2 !text-black">
+            Memo
+          </h2>
           <textarea
             value={form.memo || ""}
             onChange={(e) => setForm({ ...form, memo: e.target.value })}
-            className="w-full h-48 bg-transparent focus:outline-none resize-none text-black dark:text-black" 
-            // 👆 항상 글씨를 검은색으로
+            className="w-full h-48 bg-transparent focus:outline-none resize-none text-[#000000] caret-black placeholder-gray-500 dark:!placeholder-gray-500"
           />
         </div>
       </div>
