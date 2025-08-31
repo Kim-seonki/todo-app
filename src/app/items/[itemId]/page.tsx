@@ -120,18 +120,30 @@ export default function TodoItemPage() {
       {/* 로고 헤더 */}
       <header className="flex items-center gap-2">
         <Link href="/" className="block cursor-pointer">
+          {/* ✅ 데스크톱 전용 로고 */}
           <Image
             src="/images/logo_3x.png"
             alt="로고"
             width={200}
             height={200}
             priority
+            className="hidden md:block" // md 이상에서만 보임
+          />
+
+          {/* ✅ 모바일 전용 로고 (업로드한 이미지 사용) */}
+          <Image
+            src="/images/Small@3x.png" // 업로드한 모바일 버전 파일 경로
+            alt="모바일 로고"
+            width={150}
+            height={150}
+            priority
+            className="block md:hidden" // md 미만에서만 보임
           />
         </Link>
       </header>
 
       {/* 제목 + 완료체크 */}
-      <div className="flex items-center gap-3 border rounded-full px-6 py-3">
+      <div className="flex items-center border rounded-full h-10 px-4 pr-5">
         <DetailTitle
           name={form.name}
           isCompleted={form.isCompleted}

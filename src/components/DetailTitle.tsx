@@ -1,13 +1,14 @@
+// src/components/DetailTitle.tsx
 "use client";
 
 import Image from "next/image";
 import React, { useState } from "react";
 
 type DetailTitleProps = {
-  name: string; // 덮개 텍스트 (예: "청소하기")
+  name: string;
   isCompleted: boolean;
   onToggle: (checked: boolean) => void;
-  onNameChange?: (value: string) => void; // 이름 변경 콜백
+  onNameChange?: (value: string) => void;
 };
 
 const DetailTitle: React.FC<DetailTitleProps> = ({
@@ -19,42 +20,53 @@ const DetailTitle: React.FC<DetailTitleProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(name);
 
-  // ✅ 엔터 또는 포커스 아웃 시 저장
   const handleSave = () => {
     setIsEditing(false);
-    if (tempName.trim() === "") {
-      setTempName(name); // 빈 값이면 원래 이름 복원
-    } else if (onNameChange && tempName !== name) {
-      onNameChange(tempName); // 변경된 경우에만 부모에게 전달
+    if (!tempName.trim()) {
+      setTempName(name);
+      return;
     }
+    if (onNameChange && tempName !== name) onNameChange(tempName);
   };
 
   return (
-    <div
-      className="relative w-full max-w-[1400px] h-[72px] cursor-pointer"
-      onClick={() => !isEditing && onToggle(!isCompleted)} // 편집 중에는 토글 방지
-    >
-      {/* ✅ 배경 이미지 */}
+    <div className="relative w-full h-[64px] md:h-[64px] lg:h-[64px]">
+      {/* 배경 이미지 (체크 아이콘 + 배경 포함) */}
       <Image
         src={isCompleted ? "/images/State=Active.png" : "/images/State=Default.png"}
         alt="할 일 상태"
         fill
-        className="object-cover select-none"
+        className="object-cover rounded select-none pointer-events-none"
         priority
       />
 
-      {/* ✅ 글자 부분만 가리는 덮개 */}
+      {/* 체크 아이콘 클릭 영역(왼쪽 고정 폭) */}
+      <button
+        aria-label={isCompleted ? "미완료로 변경" : "완료로 변경"}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle(!isCompleted);
+        }}
+        className="
+          absolute top-0 h-full z-30 bg-transparent
+          left-[12px] w-[56px]        /* 모바일: 아이콘 영역 */
+          md:left-[20px] md:w-[64px]  /* 태블릿 */
+          lg:left-[24px] lg:w-[72px]  /* 데스크톱 */
+        "
+      />
+
+      {/* 덮개: **왼쪽 시작 위치 138px** 에서 width 179px (Figma 규격) */}
       <div
         className={`
-          absolute 
-          top-1/2 left-[53.75%] transform
-          -translate-x-1/2 -translate-y-1/2
-          px-12 py-2
-          rounded-md
-          flex items-center justify-center
-          z-10
+          absolute top-1/2 -translate-y-1/2
+          left-1/2 -translate-x-1/2
+          w-[179px] h-[32px] rounded-md z-20
           ${isCompleted ? "bg-[#D9D2FF]" : "bg-white"}
+          flex items-center justify-start
         `}
+        style={{
+          transform: "translate(calc(-50% + 41px), -50%)", // 중앙에서 +41px 이동
+        }}
       >
         {isEditing ? (
           <input
@@ -70,11 +82,18 @@ const DetailTitle: React.FC<DetailTitleProps> = ({
                 setIsEditing(false);
               }
             }}
-            className="text-lg font-semibold text-black bg-transparent outline-none border-b border-gray-400"
+            className="
+              bg-transparent outline-none
+              text-[18px] md:text-[20px] font-semibold text-black
+              w-[138px] text-left pl-2 truncate
+            "
           />
         ) : (
           <span
-            className="text-lg font-semibold text-black"
+            className="
+              text-[18px] md:text-[20px] font-semibold text-black
+              w-[138px] text-left pl-2 truncate cursor-text
+            "
             onClick={(e) => {
               e.stopPropagation();
               setIsEditing(true);
@@ -84,6 +103,7 @@ const DetailTitle: React.FC<DetailTitleProps> = ({
           </span>
         )}
       </div>
+
     </div>
   );
 };
