@@ -48,12 +48,12 @@ const DetailTitle: React.FC<DetailTitleProps> = ({
           onToggle(!isCompleted);
         }}
         className="
-          absolute top-0 h-full z-30 bg-transparent
-          left-[12px] w-[56px]        /* 모바일: 아이콘 영역 */
-          md:left-[20px] md:w-[64px]  /* 태블릿 */
-          lg:left-[24px] lg:w-[72px]  /* 데스크톱 */
+          absolute top-1/2 left-1/2 -translate-x-[100px] -translate-y-1/2
+          w-[56px] h-[56px] md:w-[64px] md:h-[64px] lg:w-[72px] lg:h-[72px]
+          z-50 cursor-pointer bg-transparent
         "
       />
+      
 
       {/* 덮개: **왼쪽 시작 위치 138px** 에서 width 179px (Figma 규격) */}
       <div
@@ -101,7 +101,7 @@ const DetailTitle: React.FC<DetailTitleProps> = ({
           >
             {name}
           </span>
-        )}
+        )}  
       </div>
 
     </div>
