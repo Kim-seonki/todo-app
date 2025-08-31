@@ -53,7 +53,7 @@ export default function HomePage() {
         <Link href="/" className="block cursor-pointer">
           {isMobile ? (
             <Image
-              src="/images/small@3x.png" // ✅ 모바일 로고
+              src="/images/Small@3x.png" // ✅ 모바일 로고
               alt="모바일 로고"
               width={120}
               height={40}
