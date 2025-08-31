@@ -30,7 +30,7 @@ export default function CheckList({ title, todos, onToggle, onDelete }: Props) {
         {todos.length === 0 ? (
           <EmptyState
             message={title === "DONE" ? "완료된 일이 없습니다" : "할 일을 추가해보세요!"}
-            imageSrc={title === "DONE" ? "/images/no_done.png" : "/images/no_todo.png"}
+            imageSrc={title === "DONE" ? "/images/no_done.PNG" : "/images/no_todo.PNG"}
           />
         ) : (
           todos.map((t) => (
